@@ -14,33 +14,4 @@ namespace LvovS.WebUI.Models.Configurations
             builder.HasKey(x => new {x.AccountId,x.ContactId });
         }
     }
-    public class AccountConfiguration : IEntityTypeConfiguration<Account>
-    {
-        public void Configure(EntityTypeBuilder<Account> builder)
-        {
-            builder.Property(x => x.UserName)
-                .IsUnicode();
-           
-               
-        }
-    }
-    public class ContactConfiguration : IEntityTypeConfiguration<Contact>
-    {
-        public void Configure(EntityTypeBuilder<Contact> builder)
-        {
-            builder.HasKey(x => x.Id);
-                
-            builder.Property(x => x.FirstName)
-                .IsRequired()
-                .HasMaxLength(50);
-            builder.Property(x => x.LastName)
-                .IsRequired()
-                .HasMaxLength(50);
-            builder.Property(x => x.Email)
-                .IsUnicode();
-
-
-
-        }
-    }
 }

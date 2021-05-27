@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace LvovS.WebUI.Helpers
+namespace LvovS.WebUI.JWT
 {
 
     public interface IJwtAuthenticationManager

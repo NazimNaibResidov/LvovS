@@ -6,7 +6,7 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 
-namespace LvovS.WebUI.Helpers
+namespace LvovS.WebUI.JWT
 {
     public class JwtAuthenticationManager : IJwtAuthenticationManager
     {

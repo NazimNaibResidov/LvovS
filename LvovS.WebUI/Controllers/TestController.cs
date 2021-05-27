@@ -21,6 +21,18 @@ namespace LvovS.WebUI.Controllers
         
        private UserManager<Account> _UserManager;
 
+        [HttpGet]
+        public async Task<IActionResult> Get(string Name)
+        {
+            var result = await _UserManager.FindByNameAsync(Name);
+            if (result == null)
+                return NotFound();
+            else
+            {
+                return RedirectToAction("Create");
+            }
+
+        }
         public TestController(IUnitOfWork unitOfWork,UserManager<Account> UserManager)
         {
             this._unitOfWork = unitOfWork;
@@ -80,18 +92,8 @@ namespace LvovS.WebUI.Controllers
             await _unitOfWork.CommitAsync();
 
         }
-        [HttpGet]
-        public async Task<IActionResult> Get(string Name)
-        {
-           var result=await _UserManager.FindByNameAsync(Name);
-            if (result==null)
-              return NotFound();
-            else
-            {
-                return RedirectToAction("Create");
-            }
-            
-        }
+       
+        [HttpPut]
         public async Task Update(AddViewModel accountContactViewModel)
         {
             var resultEmail=await  _UserManager.FindByEmailAsync(accountContactViewModel.Email);

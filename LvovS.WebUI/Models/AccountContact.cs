@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using LvovS.WebUI.DTO.Core;
 
 namespace LvovS.WebUI.Models
 {
-    public class AccountContact
+    public class AccountContact: BaseEntity<int>
     {
         
         public string AccountId { get; set; }

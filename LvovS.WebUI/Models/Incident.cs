@@ -1,12 +1,12 @@
-﻿using System;
+﻿using LvovS.WebUI.DTO.Core;
+using System;
 
 namespace LvovS.WebUI.Models
 {
-    public class Incident
+    public class Incident: BaseEntity<string>
     {
-        public string Id { get; set; }
+        
         public DateTime DateTime { get; set; }
         public string Description { get; set; }
-        
     }
 }

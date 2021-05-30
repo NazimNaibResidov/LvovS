@@ -1,11 +1,11 @@
-﻿using LvovS.WebUI.Models;
+﻿using LvovS.WebUI.DTO.AccountContacts;
+using LvovS.WebUI.DTO.Accounts;
+using LvovS.WebUI.DTO.Contacts;
+using LvovS.WebUI.DTO.Incidents;
+using LvovS.WebUI.Interfaces.Facade;
+using LvovS.WebUI.Models;
 using LvovS.WebUI.Models.ViewModels;
-using LvovS.WebUI.Repsotry.Abstaract;
-using LvovS.WebUI.Repsotry.Core;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,129 +17,190 @@ namespace LvovS.WebUI.Controllers
     [ApiController]
     public class TestController : ControllerBase
     {
-        private IUnitOfWork _unitOfWork;
-        
-       private UserManager<Account> _UserManager;
+        #region ::CTOR::
 
+        public TestController(
+                                  IContactFacade contactFacade,
+                    IAccountContactFacade accountContactFacade,
+                                IIncidentFacade incidentFacade,
+                                   IAcountFacade acountFacade
+           )
+        {
+            _acountFacade = acountFacade;
+            _contactFacade = contactFacade;
+            _accountContactFacade = accountContactFacade;
+            _incidentFacade = incidentFacade;
+        }
+
+        #endregion ::CTOR::
+
+        #region ::FILDS::
+
+        private readonly IContactFacade _contactFacade;
+        private readonly IAccountContactFacade _accountContactFacade;
+        private readonly IIncidentFacade _incidentFacade;
+        private readonly IAcountFacade _acountFacade;
+
+        #endregion ::FILDS::
+
+        #region ::GUID::
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> Get(string Name)
+        public List<ContactViewModel> Get()
         {
-            var result = await _UserManager.FindByNameAsync(Name);
-            if (result == null)
-                return NotFound();
-            else
-            {
-                return RedirectToAction("Create");
-            }
+            return _contactFacade.Get();
+        }
 
-        }
-        public TestController(IUnitOfWork unitOfWork,UserManager<Account> UserManager)
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="Name"></param>
+        /// <returns></returns>
+        [HttpGet("email")]
+        public  ActionResult<ContactViewModel> GetByName(string email)
         {
-            this._unitOfWork = unitOfWork;
-            _UserManager = UserManager;
+            var result = _contactFacade.FindEmail(email);
+            return result != null ? Ok(result) : NotFound();
         }
+        [HttpGet("Id")]
+        public ActionResult<ContactViewModel> GetById(string Id)
+        {
+            var result = _contactFacade.Get()
+                .Find(x => x.Id == Id);
+            return result != null ? Ok(result) : NotFound();
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="accountContactViewModel"></param>
+        /// <returns></returns>
         [HttpPost]
-        public async Task Create(AddViewModel accountContactViewModel)
+        public async Task<IActionResult> Create(AddViewModel accountContactViewModel)
         {
+            #region ::Identety::
 
-            Account account = new Account
+            AddAccountEntityDTO addAccountEntityDTO = new AddAccountEntityDTO
             {
                 Email = accountContactViewModel.Email,
-                UserName = $"{accountContactViewModel.FirstName} {accountContactViewModel.LastName}"
-
+                UserName = $"{accountContactViewModel.FirstName} {accountContactViewModel.LastName}",
+                Password = accountContactViewModel.Password
             };
+            var _resultIdentity = await _acountFacade.Add(addAccountEntityDTO);
 
-            Contact contact = new Contact
+            #endregion ::Identety::
+
+            #region ::AddContactEntityDTO::
+
+            AddContactEntityDTO addContactEntityDTO = new AddContactEntityDTO
             {
-                Id=Guid.NewGuid().ToString(),
-                Email = accountContactViewModel.Email,
                 FirstName = accountContactViewModel.FirstName,
                 LastName = accountContactViewModel.LastName,
-
+                Email = accountContactViewModel.Email
             };
+            var _resultContactFacade = await _contactFacade.Add(addContactEntityDTO);
 
-            Incident incident = new Incident
+            #endregion ::AddContactEntityDTO::
+
+            #region ::Conditionals::
+
+            if (_resultIdentity.Succeeded & _resultContactFacade.Id != null)
             {
-                Id = Guid.NewGuid().ToString(),
-                DateTime = DateTime.Now
-            };
+                #region :: AddAccountContactEntityDTO::
 
-            
+                var _resultAccount = await _acountFacade.FindByEmail(addAccountEntityDTO.Email);
 
-            var identityResult = await _UserManager.CreateAsync(account, accountContactViewModel.Password);
-            await _unitOfWork.contactRepstory.CreateAsync(contact);
-            var contactResult = await _unitOfWork.CommitAsync();
-            if (identityResult.Succeeded&contactResult)
-            {
-
-                AccountContact accountContact = new AccountContact
+                AddAccountContactEntityDTO addAccountContactEntityDTO = new AddAccountContactEntityDTO
                 {
-                    AccountId = _UserManager.FindByEmailAsync(accountContactViewModel.Email).Id.ToString(),
-                    ContactId = contact.Id
+                    AccountId = _resultAccount.Id,
+                    ContactId = _resultContactFacade.Id
                 };
+                await _accountContactFacade.Add(addAccountContactEntityDTO);
+                return Ok("operation completed successfully");
 
-                await _unitOfWork.accountContactRepstory.CreateAsync(accountContact);
-               
+                #endregion :: AddAccountContactEntityDTO::
+            }
+            else
+
+            {
+                #region ::AddIncidentEntityDTO::
                 
+                AddIncidentEntityDTO addIncidentEntityDTO = new AddIncidentEntityDTO
+                {
+                    DateTime = DateTime.Now
+                };
+                addIncidentEntityDTO.Description = _resultIdentity.Errors.Select(x => x.Description).FirstOrDefault();
+                var result = await _incidentFacade.Add(addIncidentEntityDTO);
+                return BadRequest("operation completed with errors");
+
+                #endregion ::AddIncidentEntityDTO::
+            }
+
+            #endregion ::Conditionals::
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="accountContactViewModel"></param>
+        /// <returns></returns>
+        [HttpPut("id")]
+        public async Task<IActionResult> Update(string id,[FromBody] UpdateAndDeleteContactEntityDTO _updateAndDeleteContactEntityDTO)
+        {
+            if (id != _updateAndDeleteContactEntityDTO.Id)
+                return BadRequest();
+
+            #region ::UpdateAndDeleteAccountEntityDTO::
+
+            UpdateAndDeleteAccountEntityDTO updateAndDeleteAccountEntityDTO = new UpdateAndDeleteAccountEntityDTO
+            {
+                Email = _updateAndDeleteContactEntityDTO.Email,
+                UserName = $"{_updateAndDeleteContactEntityDTO.FirstName} {_updateAndDeleteContactEntityDTO.LastName}"
+            };
+            var _resultAcountFacade = await _acountFacade.Update(updateAndDeleteAccountEntityDTO);
+
+            #endregion ::UpdateAndDeleteAccountEntityDTO::
+
+            #region :: UpdateAndDeleteContactEntityDTO::
+
+            UpdateAndDeleteContactEntityDTO updateAndDeleteContactEntityDTO = new UpdateAndDeleteContactEntityDTO
+            {
+                Email = _updateAndDeleteContactEntityDTO.Email,
+                FirstName = _updateAndDeleteContactEntityDTO.FirstName,
+                LastName = _updateAndDeleteContactEntityDTO.LastName,
+            };
+            var _resultContactFacade = await _contactFacade.Update(updateAndDeleteContactEntityDTO);
+
+            #endregion :: UpdateAndDeleteContactEntityDTO::
+
+            if (_resultAcountFacade.Succeeded & _resultContactFacade)
+            {
+                return Ok();
             }
             else
             {
-                incident.Description = identityResult.Errors.Select(x => x.Description).FirstOrDefault();
-                await _unitOfWork.incidentRepstory.CreateAsync(incident);
-                _unitOfWork.Rollback();
+                #region ::AddIncidentEntityDTO::
 
-            }
-            await _unitOfWork.CommitAsync();
-
-        }
-       
-        [HttpPut]
-        public async Task Update(AddViewModel accountContactViewModel)
-        {
-            var resultEmail=await  _UserManager.FindByEmailAsync(accountContactViewModel.Email);
-            resultEmail.Email = accountContactViewModel.Email;
-            resultEmail.UserName = accountContactViewModel.FirstName + " " + accountContactViewModel.LastName;
-            var  resultIdentity= await _UserManager.UpdateAsync(resultEmail);
-
-            var resultContact = _unitOfWork.accountContactRepstory.GetAll()
-              .FirstOrDefault(x => x.AccountId == resultEmail.Id)
-              .Contact;
-
-            resultContact.FirstName = accountContactViewModel.FirstName;
-            resultContact.LastName = accountContactViewModel.LastName;
-            resultContact.Email = accountContactViewModel.Email;
-            await _unitOfWork.contactRepstory.UpdateAsync(resultContact);
-
-            var resultaccountContact = _unitOfWork.accountContactRepstory.GetAll().FirstOrDefault(x => x.ContactId == resultContact.Id);
-
-            await  _unitOfWork.accountContactRepstory.UpdateAsync(resultaccountContact);
-            var result=await _unitOfWork.CommitAsync();
-            if (!result)
-            {
-                
-                await  _unitOfWork.incidentRepstory.CreateAsync(new Incident
+                AddIncidentEntityDTO addIncidentEntityDTO = new AddIncidentEntityDTO
                 {
-                    Id = Guid.NewGuid().ToString(),
                     DateTime = DateTime.UtcNow,
-                    Description = "save has been error"
-                });
-                await _unitOfWork.CommitAsync();
-            }
-               
-                
-            
-                
-            //var resultContact= await _unitOfWork.contactRepstory.FindAsync(x => x.Email == accountContactViewModel.Email);
-            //resultContact.FirstName = accountContactViewModel.FirstName;
-            //resultContact.LastName = accountContactViewModel.LastName;
-            //resultContact.Email = accountContactViewModel.Email;
-            //var result=  await _unitOfWork.contactRepstory.UpdateAsync(resultContact);
-            //if (resultIdentity.Succeeded&)
-            //{
+                };
+                foreach (var item in _resultAcountFacade.Errors)
+                {
+                    addIncidentEntityDTO.Description = item.Description;
+                }
+                await _incidentFacade.Add(addIncidentEntityDTO);
 
-            //}
-           
+                #endregion ::AddIncidentEntityDTO::
+
+                return BadRequest();
+            }
         }
-     
+
+        #endregion ::GUID::
     }
 }

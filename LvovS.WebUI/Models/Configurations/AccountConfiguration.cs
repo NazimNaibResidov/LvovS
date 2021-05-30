@@ -7,10 +7,13 @@ namespace LvovS.WebUI.Models.Configurations
     {
         public void Configure(EntityTypeBuilder<Account> builder)
         {
+
+            builder.Property(x => x.Email)
+                .IsUnicode();
             builder.Property(x => x.UserName)
                 .IsUnicode();
-           
-               
+
+            
         }
     }
 }

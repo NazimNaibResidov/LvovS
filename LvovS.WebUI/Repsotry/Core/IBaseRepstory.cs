@@ -8,22 +8,25 @@ namespace LvovS.WebUI.Repsotry.Core
 {
     public interface IBaseRepstory<T> where T : class
     {
+        #region ::FIND::
+        bool FindAny(Expression<Func<T, bool>> match);
+        Task<bool> FindAnyAsync(Expression<Func<T, bool>> match);
+        ICollection<T> FindBy(Expression<Func<T, bool>> match);
+        Task<ICollection<T>> FindByAsync(Expression<Func<T, bool>> match);
+        T FindFirst(Expression<Func<T, bool>> match);
+        Task<T> FindFirstAsync(Expression<Func<T, bool>> match);
+        T FindById(object id);
+        Task<T> FindByIdAsync(object id);
+        #endregion
         IQueryable<T> GetAll();
+
         Task<T> CreateAsync(T Entity);
-        Task<T> UpdateAsync(T Entity);
-        Task<T> DeleteAsync(T Entity);
-       
 
-        Task<T> GetByIdAsync(int id);
+        T Update(T Entity);
 
-        
-
-        Task<T> FindAsync(Expression<Func<T, bool>> predecat);
+        T Delete(T Entity);
 
        
-
-        Task<ICollection<T>> FindAllAsync(Expression<Func<T, bool>> predecat);
-
         Task<bool> Save();
     }
 }

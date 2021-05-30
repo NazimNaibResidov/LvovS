@@ -33,6 +33,7 @@ namespace LvovS.WebUI.Migrations
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<bool>("EmailConfirmed")
@@ -87,27 +88,32 @@ namespace LvovS.WebUI.Migrations
 
             modelBuilder.Entity("LvovS.WebUI.Models.AccountContact", b =>
                 {
-                    b.Property<string>("ContactId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("AccountId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("ContactId", "AccountId");
+                    b.Property<string>("ContactId")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.HasIndex("AccountId");
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
 
-                    b.ToTable("AccountContacts");
+                    b.HasKey("AccountId", "ContactId");
+
+                    b.HasIndex("ContactId");
+
+                    b.ToTable("AccountContact");
                 });
 
             modelBuilder.Entity("LvovS.WebUI.Models.Contact", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(450)")
+                        .HasDefaultValueSql("NEWID()");
 
                     b.Property<string>("Email")
                         .IsUnicode(true)
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -121,16 +127,25 @@ namespace LvovS.WebUI.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
+
+                    b.HasIndex("FirstName")
+                        .IsUnique();
+
+                    b.HasIndex("LastName")
+                        .IsUnique();
+
                     b.ToTable("Contacts");
                 });
 
             modelBuilder.Entity("LvovS.WebUI.Models.Incident", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("AccountId")
-                        .HasColumnType("nvarchar(450)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(450)")
+                        .HasDefaultValueSql("NEWID()");
 
                     b.Property<DateTime>("DateTime")
                         .HasColumnType("datetime2");
@@ -140,9 +155,7 @@ namespace LvovS.WebUI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountId");
-
-                    b.ToTable("Incidents");
+                    b.ToTable("Incident");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -279,13 +292,13 @@ namespace LvovS.WebUI.Migrations
             modelBuilder.Entity("LvovS.WebUI.Models.AccountContact", b =>
                 {
                     b.HasOne("LvovS.WebUI.Models.Account", "Account")
-                        .WithMany()
+                        .WithMany("AccountContacts")
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("LvovS.WebUI.Models.Contact", "Contact")
-                        .WithMany()
+                        .WithMany("AccountContacts")
                         .HasForeignKey("ContactId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -293,15 +306,6 @@ namespace LvovS.WebUI.Migrations
                     b.Navigation("Account");
 
                     b.Navigation("Contact");
-                });
-
-            modelBuilder.Entity("LvovS.WebUI.Models.Incident", b =>
-                {
-                    b.HasOne("LvovS.WebUI.Models.Account", "Account")
-                        .WithMany("Incidents")
-                        .HasForeignKey("AccountId");
-
-                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -357,7 +361,12 @@ namespace LvovS.WebUI.Migrations
 
             modelBuilder.Entity("LvovS.WebUI.Models.Account", b =>
                 {
-                    b.Navigation("Incidents");
+                    b.Navigation("AccountContacts");
+                });
+
+            modelBuilder.Entity("LvovS.WebUI.Models.Contact", b =>
+                {
+                    b.Navigation("AccountContacts");
                 });
 #pragma warning restore 612, 618
         }

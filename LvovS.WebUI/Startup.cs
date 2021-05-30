@@ -1,30 +1,20 @@
+using AutoMapper;
 using LvovS.WebUI.Core;
 using LvovS.WebUI.Extensions;
-using LvovS.WebUI.Models;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LvovS.WebUI
 {
     public class Startup
     {
         private readonly string key;
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -35,7 +25,6 @@ namespace LvovS.WebUI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddControllers();
             //services.AddAuthentication(options =>
             //{
@@ -56,14 +45,17 @@ namespace LvovS.WebUI
             //}
             //    );
             // services.AddSingleton<IJwtAuthenticationManager, JwtAuthenticationManager>();
+          
+            //services.AddAutoMapper();
             services.AddDbContext<AccountContactDBContext>(options =>
-
-             options.UseSqlServer(Configuration.GetConnectionString("test")));
+            options.UseSqlServer(Configuration.GetConnectionString("test")));
+            //services.AddAutoMapper();
+            services.LoadAll();
             services.IdentityLoad();
             
-            services.LoadAll();
-           
-           
+
+
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "LvovS.WebUI", Version = "v1" });

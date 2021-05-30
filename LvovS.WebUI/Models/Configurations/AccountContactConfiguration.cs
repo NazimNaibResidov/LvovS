@@ -1,9 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace LvovS.WebUI.Models.Configurations
 {
@@ -11,7 +7,10 @@ namespace LvovS.WebUI.Models.Configurations
     {
         public void Configure(EntityTypeBuilder<AccountContact> builder)
         {
-            builder.HasKey(x => new {x.AccountId,x.ContactId });
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.AccountId).IsRequired();
+            builder.Property(x => x.ContactId).IsRequired();
+            builder.HasKey(x => new { x.AccountId, x.ContactId });
         }
     }
 }

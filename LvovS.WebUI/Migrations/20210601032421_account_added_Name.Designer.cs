@@ -4,14 +4,16 @@ using LvovS.WebUI.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace LvovS.WebUI.Migrations
 {
     [DbContext(typeof(AccountContactDBContext))]
-    partial class AccountContactDBContextModelSnapshot : ModelSnapshot
+    [Migration("20210601032421_account_added_Name")]
+    partial class account_added_Name
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

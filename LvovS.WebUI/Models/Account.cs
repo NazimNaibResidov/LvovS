@@ -6,7 +6,9 @@ namespace LvovS.WebUI.Models
     public class Account : IdentityUser
     {
 
-        public virtual ICollection<AccountContact> AccountContacts { get; set; }
+        public string Name { get; set; }
+        // public virtual ICollection<AccountContact> AccountContacts { get; set; }
+        public Contact Contact { get; set; }
     }
     
 }

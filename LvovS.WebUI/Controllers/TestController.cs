@@ -1,9 +1,6 @@
-﻿using LvovS.WebUI.DTO.AccountContacts;
-using LvovS.WebUI.DTO.Accounts;
-using LvovS.WebUI.DTO.Contacts;
+﻿using LvovS.WebUI.DTO.Contacts;
 using LvovS.WebUI.DTO.Incidents;
 using LvovS.WebUI.Interfaces.Facade;
-using LvovS.WebUI.Models;
 using LvovS.WebUI.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -61,11 +58,12 @@ namespace LvovS.WebUI.Controllers
         /// <param name="Name"></param>
         /// <returns></returns>
         [HttpGet("email")]
-        public  ActionResult<ContactViewModel> GetByName(string email)
+        public ActionResult<ContactViewModel> GetByName(string email)
         {
             var result = _contactFacade.FindEmail(email);
             return result != null ? Ok(result) : NotFound();
         }
+
         [HttpGet("Id")]
         public ActionResult<ContactViewModel> GetById(string Id)
         {
@@ -82,53 +80,23 @@ namespace LvovS.WebUI.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(AddViewModel accountContactViewModel)
         {
-            #region ::Identety::
+            var _resultIdentity = await _acountFacade.Add(accountContactViewModel);
 
-            AddAccountEntityDTO addAccountEntityDTO = new AddAccountEntityDTO
-            {
-                Email = accountContactViewModel.Email,
-                UserName = $"{accountContactViewModel.FirstName} {accountContactViewModel.LastName}",
-                Password = accountContactViewModel.Password
-            };
-            var _resultIdentity = await _acountFacade.Add(addAccountEntityDTO);
+            var data = await _acountFacade.FindByEmail(accountContactViewModel.Email);
 
-            #endregion ::Identety::
-
-            #region ::AddContactEntityDTO::
-
-            AddContactEntityDTO addContactEntityDTO = new AddContactEntityDTO
-            {
-                FirstName = accountContactViewModel.FirstName,
-                LastName = accountContactViewModel.LastName,
-                Email = accountContactViewModel.Email
-            };
-            var _resultContactFacade = await _contactFacade.Add(addContactEntityDTO);
-
-            #endregion ::AddContactEntityDTO::
-
-            #region ::Conditionals::
+            var _resultContactFacade = await _contactFacade.Add(data.Id, accountContactViewModel);
 
             if (_resultIdentity.Succeeded & _resultContactFacade.Id != null)
             {
-                #region :: AddAccountContactEntityDTO::
-
-                var _resultAccount = await _acountFacade.FindByEmail(addAccountEntityDTO.Email);
-
-                AddAccountContactEntityDTO addAccountContactEntityDTO = new AddAccountContactEntityDTO
-                {
-                    AccountId = _resultAccount.Id,
-                    ContactId = _resultContactFacade.Id
-                };
-                await _accountContactFacade.Add(addAccountContactEntityDTO);
                 return Ok("operation completed successfully");
 
-                #endregion :: AddAccountContactEntityDTO::
+                #endregion ::GUID::
             }
             else
 
             {
                 #region ::AddIncidentEntityDTO::
-                
+
                 AddIncidentEntityDTO addIncidentEntityDTO = new AddIncidentEntityDTO
                 {
                     DateTime = DateTime.Now
@@ -139,8 +107,6 @@ namespace LvovS.WebUI.Controllers
 
                 #endregion ::AddIncidentEntityDTO::
             }
-
-            #endregion ::Conditionals::
         }
 
         /// <summary>
@@ -149,33 +115,11 @@ namespace LvovS.WebUI.Controllers
         /// <param name="accountContactViewModel"></param>
         /// <returns></returns>
         [HttpPut("id")]
-        public async Task<IActionResult> Update(string id,[FromBody] UpdateAndDeleteContactEntityDTO _updateAndDeleteContactEntityDTO)
+        public async Task<IActionResult> Update(string id, [FromBody] GenericModelViewModel genericModelViewModel)
         {
-            if (id != _updateAndDeleteContactEntityDTO.Id)
-                return BadRequest();
+            var _resultAcountFacade = await _acountFacade.Update(id, genericModelViewModel);
 
-            #region ::UpdateAndDeleteAccountEntityDTO::
-
-            UpdateAndDeleteAccountEntityDTO updateAndDeleteAccountEntityDTO = new UpdateAndDeleteAccountEntityDTO
-            {
-                Email = _updateAndDeleteContactEntityDTO.Email,
-                UserName = $"{_updateAndDeleteContactEntityDTO.FirstName} {_updateAndDeleteContactEntityDTO.LastName}"
-            };
-            var _resultAcountFacade = await _acountFacade.Update(updateAndDeleteAccountEntityDTO);
-
-            #endregion ::UpdateAndDeleteAccountEntityDTO::
-
-            #region :: UpdateAndDeleteContactEntityDTO::
-
-            UpdateAndDeleteContactEntityDTO updateAndDeleteContactEntityDTO = new UpdateAndDeleteContactEntityDTO
-            {
-                Email = _updateAndDeleteContactEntityDTO.Email,
-                FirstName = _updateAndDeleteContactEntityDTO.FirstName,
-                LastName = _updateAndDeleteContactEntityDTO.LastName,
-            };
-            var _resultContactFacade = await _contactFacade.Update(updateAndDeleteContactEntityDTO);
-
-            #endregion :: UpdateAndDeleteContactEntityDTO::
+            var _resultContactFacade = await _contactFacade.Update(id, genericModelViewModel);
 
             if (_resultAcountFacade.Succeeded & _resultContactFacade)
             {
@@ -199,8 +143,7 @@ namespace LvovS.WebUI.Controllers
 
                 return BadRequest();
             }
+            return BadRequest();
         }
-
-        #endregion ::GUID::
     }
 }

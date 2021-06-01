@@ -1,5 +1,4 @@
-﻿using LvovS.WebUI.DTO;
-using LvovS.WebUI.DTO.Incidents;
+﻿using LvovS.WebUI.DTO.Incidents;
 using System.Threading.Tasks;
 
 namespace LvovS.WebUI.Interfaces.Facade

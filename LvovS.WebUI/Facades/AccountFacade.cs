@@ -3,6 +3,7 @@ using LvovS.WebUI.Extensions;
 using LvovS.WebUI.Interfaces.Facade;
 using LvovS.WebUI.Interfaces.Services;
 using LvovS.WebUI.Models;
+using LvovS.WebUI.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -15,12 +16,11 @@ namespace LvovS.WebUI.Facades
     {
         #region ::CTOR::
 
-        public AccountFacade(UserManager<Account> userManager, IAccountContactFacade accountContactFacade, IContactService contactService)
+        public AccountFacade(UserManager<Account> userManager, IAccountService accountService, IContactService contactService, IAccountContactService accountContactService)
         {
             _userManager = userManager;
-            _accountContactFacade = accountContactFacade;
-
             _contactService = contactService;
+            _accountService = accountService;
         }
 
         #endregion ::CTOR::
@@ -29,7 +29,7 @@ namespace LvovS.WebUI.Facades
 
         private UserManager<Account> _userManager;
         private readonly IContactService _contactService;
-        private readonly IAccountContactFacade _accountContactFacade;
+        private readonly IAccountService _accountService;
 
         #endregion ::FILDS::
 
@@ -49,13 +49,19 @@ namespace LvovS.WebUI.Facades
                  .ToListAsync();
         }
 
-        public async Task<IdentityResult> Add(AddAccountEntityDTO addAccountEntityDTO)
+        public async Task<IdentityResult> Add(AddViewModel accountContactViewModel)
         {
+            AddAccountEntityDTO addAccountEntityDTO = new AddAccountEntityDTO
+            {
+                Email = accountContactViewModel.Email,
+                UserName = $"{accountContactViewModel.FirstName} {accountContactViewModel.LastName}",
+                Password = accountContactViewModel.Password,
+            };
             var _resultMapper = addAccountEntityDTO.Mapped<Account>();
             var _resultIdentity = await _userManager.CreateAsync(_resultMapper, addAccountEntityDTO.Password);
+
             return _resultIdentity;
         }
-       
 
         public async Task<IdentityResult> Delete(UpdateAndDeleteAccountEntityDTO updateAndDeleteAccountEntityDTO)
         {
@@ -63,13 +69,13 @@ namespace LvovS.WebUI.Facades
             return await _userManager.DeleteAsync(_resultAccount);
         }
 
-        public async Task<IdentityResult> Update(UpdateAndDeleteAccountEntityDTO updateAndDeleteAccountEntityDTO)
+        public async Task<IdentityResult> Update(object id, GenericModelViewModel genericModelViewModel)
         {
-            var resultContactId = _contactService.GetAll().First(x => x.Id == updateAndDeleteAccountEntityDTO.Id).Id;
-            var _id= _accountContactFacade.Get().Find(x => x.ContactId == resultContactId).AccountId;
-            var resultEmail = await _userManager.FindByIdAsync(_id);
-            var resultIdentity = await _userManager.UpdateAsync(resultEmail);
-            return resultIdentity;
+            var _accountId = _contactService.FindByIdAsync(id).Result.AccountId;
+            var account = await _userManager.FindByIdAsync(_accountId);
+            account.Email = genericModelViewModel.Email;
+            account.UserName = genericModelViewModel.FirstName + " " + genericModelViewModel.LastName;
+            return await _userManager.UpdateAsync(account);
         }
 
         #endregion ::CRUD::
@@ -84,6 +90,11 @@ namespace LvovS.WebUI.Facades
         public async Task<Account> FindByName(string conitinol)
         {
             return await _userManager.FindByNameAsync(conitinol);
+        }
+
+        public async Task<Account> FindByIdAsync(object id)
+        {
+            return await _accountService.FindByIdAsync(id);
         }
 
         #endregion ::FINDS::

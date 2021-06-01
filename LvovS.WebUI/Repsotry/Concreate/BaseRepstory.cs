@@ -87,7 +87,7 @@ namespace LvovS.WebUI.Repsotry.Concreate
         public T Update(T Entity)
         {
             //Set<T>().Attach(updated);
-          //  context.Set<T>().Attach(Entity);
+            _context.Set<T>().Attach(Entity);
             _context.Entry(Entity).State = EntityState.Modified;
             _context.Update(Entity);
             return Entity;

@@ -14,7 +14,7 @@ namespace LvovS.WebUI.Core
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Contact> Contacts { get; set; }
 
-        public DbSet<Incident> AccountContacts { get; set; }
+        // public DbSet<Incident> AccountContacts { get; set; }
         public DbSet<Incident> Incidents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)

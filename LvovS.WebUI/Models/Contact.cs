@@ -13,7 +13,9 @@ namespace LvovS.WebUI.Models
 
         [UIHint("email")]
         public string Email { get; set; }
-        public virtual ICollection<AccountContact> AccountContacts { get; set; }
-       
+        public string AccountId { get; set; }
+        public Account Account { get; set; }
+        // public virtual ICollection<AccountContact> AccountContacts { get; set; }
+
     }
 }

@@ -56,8 +56,8 @@ namespace LvovS.WebUI.Services.Core
         #endregion
         public async Task<T> CreateAsync<K>(K dto)
         {
-            var resultDTO = dto.Mapped<T>();
-            //var resultDTO = CreateEntityInstance(dto);
+            //var resultDTO = dto.Mapped<T>();
+            var resultDTO = CreateEntityInstance(dto);
             return await _repository.CreateAsync(resultDTO);
         }
 

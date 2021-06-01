@@ -1,5 +1,6 @@
 ﻿using LvovS.WebUI.DTO.Accounts;
 using LvovS.WebUI.Models;
+using LvovS.WebUI.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,11 +13,13 @@ namespace LvovS.WebUI.Interfaces.Facade
 
         List<AccountViewModel> Get();
 
-        Task<IdentityResult> Add(AddAccountEntityDTO addAccountEntityDTO);
+        Task<IdentityResult> Add(AddViewModel accountContactViewModel);
 
         Task<IdentityResult> Delete(UpdateAndDeleteAccountEntityDTO updateAndDeleteAccountEntityDTO);
 
-        Task<IdentityResult> Update(UpdateAndDeleteAccountEntityDTO updateAndDeleteAccountEntityDTO);
+        Task<IdentityResult> Update(object id, GenericModelViewModel genericModelViewModel);
+
+        Task<Account> FindByIdAsync(object id);
 
         Task<Account> FindByEmail(string email);
 

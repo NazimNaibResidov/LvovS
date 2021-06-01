@@ -1,6 +1,7 @@
 using AutoMapper;
 using LvovS.WebUI.Core;
 using LvovS.WebUI.Extensions;
+using LvovS.WebUI.Mappers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -45,10 +46,11 @@ namespace LvovS.WebUI
             //}
             //    );
             // services.AddSingleton<IJwtAuthenticationManager, JwtAuthenticationManager>();
-          
-            //services.AddAutoMapper();
+
+
+            services.AddAutoMapper();
             services.AddDbContext<AccountContactDBContext>(options =>
-            options.UseSqlServer(Configuration.GetConnectionString("test")));
+            options.UseSqlServer(Configuration.GetConnectionString("test")).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
             //services.AddAutoMapper();
             services.LoadAll();
             services.IdentityLoad();

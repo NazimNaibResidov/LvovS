@@ -12,6 +12,9 @@ namespace LvovS.WebUI.Models.Configurations
                 .IsUnicode();
             builder.Property(x => x.UserName)
                 .IsUnicode();
+            builder.Property(x => x.Name)
+                .HasMaxLength(50);
+           
 
             
         }
